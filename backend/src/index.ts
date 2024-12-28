@@ -45,21 +45,21 @@ pool.query("SELECT NOW()", (err, res) => {
     console.log("Database connected:", res.rows[0]);
 
     // pool.query("DELETE FROM utilizatori");
-    //     pool.query("DELETE FROM recenzii");
+    // pool.query("DELETE FROM recenzii");
     // pool.query("DELETE FROM comenzi");
-    //     pool.query("DELETE FROM produse");
-    //     pool.query("DELETE FROM categorii");
+    // pool.query("DELETE FROM produse");
+    // pool.query("DELETE FROM categorii");
     // pool.query("DELETE FROM inventar");
-    //     pool.query("DELETE FROM specificatii");
+    // pool.query("DELETE FROM specificatii");
 
     // run the seeders
 
   // seedUtilizatori();
-   // seedCategorii();
-    // seedProduse();
-  ///  seedComenzi();
-   // seedRecenzii();
-  //  seedInventar();
-   // seedSpecificatii();
+  // seedCategorii();
+  // seedProduse();
+  // seedComenzi();
+  // seedRecenzii();
+  // seedInventar();
+  // seedSpecificatii();
   }
 });
