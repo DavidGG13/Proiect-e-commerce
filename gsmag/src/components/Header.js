@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 import './Header.css';
-
+import SearchBar from './SearchBar'; // Import the SearchBar component
+import { parseJwt } from '../utils/auth';
 function Header() {
-  const [showModal, setShowModal] = useState(null); // 'login' sau 'signup'
+  const navigate = useNavigate(); // Hook pentru navigare
+  const location = useLocation(); // Hook pentru a obține calea curentă
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null); // Stocăm utilizatorul logat
+  const [showDropdown, setShowDropdown] = useState(false); // Dropdown pentru profil
   const [formData, setFormData] = useState({
     nume: '',
     email: '',
@@ -12,21 +20,71 @@ function Header() {
     numar_telefon: '',
   });
 
+  // Verificăm dacă utilizatorul este logat
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+
+      // Decodăm token-ul pentru a extrage datele utilizatorului
+      const userData = JSON.parse(atob(token.split('.')[1])); // Decodăm payload-ul
+      setUser(userData.utilizator); // Salvăm datele utilizatorului
+    }
+  }, []);
+
+  // Gestionăm datele din formular
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Funcție pentru Sign Up
+  // Login
+  const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await fetch('http://localhost:5500/user/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        parola: formData.parola,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Salvează token-ul
+      localStorage.setItem('token', data.token);
+
+      // Decodează token-ul pentru a extrage datele utilizatorului
+      const decodedToken = parseJwt(data.token);
+
+      // Salvează separat userId și userName
+      localStorage.setItem('userId', decodedToken.utilizator.utilizator_id);
+      localStorage.setItem('userName', decodedToken.utilizator.nume);
+
+      alert('Autentificare reușită!');
+      setIsLoggedIn(true);
+      setUser(decodedToken.utilizator); // Actualizează starea locală a utilizatorului
+      setShowLoginModal(false); // Închide modalul
+    } else {
+      alert(data.error);
+    }
+  } catch (error) {
+    alert('Eroare de conexiune. Încearcă din nou!');
+  }
+};
+
+  // Sign Up
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
-
     if (formData.parola !== formData.confirmPassword) {
       alert('Parolele nu se potrivesc!');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/auth/register', {
+      const response = await fetch('http://localhost:5500/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -39,55 +97,70 @@ function Header() {
       });
 
       const data = await response.json();
-      alert(data.message || data.error); // Mesaj de succes sau eroare
-      if (response.ok) setShowModal(null); // Închide modalul
+      if (response.ok) {
+        alert('Cont creat cu succes!');
+        setShowSignupModal(false);
+      } else {
+        alert(data.error);
+      }
     } catch (error) {
-      alert('A apărut o eroare. Încearcă din nou!');
+      alert('Eroare de conexiune. Încearcă din nou!');
     }
   };
 
-  // Funcție pentru Login
- const handleLoginSubmit = async (e) => {
-  e.preventDefault();
-
-  try {
-    const response = await fetch('http://localhost:5500/user/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: formData.email,
-        parola: formData.parola,
-      }),
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      localStorage.setItem('token', data.token); // Salvăm token-ul în localStorage
-      alert('Autentificare reușită!');
-      setShowModal(null);
-    } else {
-      alert(data.error);
-    }
-  } catch (error) {
-    alert('A apărut o eroare. Încearcă din nou!');
-  }
+  // Logout
+  const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId'); // Șterge userId
+  localStorage.removeItem('userName'); // Șterge userName
+  setIsLoggedIn(false);
+  setUser(null);
+  alert('Delogat cu succes!');
+  navigate('/'); // Redirecționează către pagina principală
 };
+
+  const handleCloseModal = () => {
+    setShowLoginModal(false);
+    setShowSignupModal(false);
+  };
 
   return (
     <>
-      {/* Bara de căutare */}
-      <div className="search-bar-container">
-        <input type="text" placeholder="Caută produse..." className="search-input" />
-        <button className="search-button">Caută</button>
-        <button className="login-button" onClick={() => setShowModal('login')}>Login</button>
-        <button className="signup-button" onClick={() => setShowModal('signup')}>Sign Up</button>
-      </div>
+      {/* Bara albastră cu logo-ul GSMag */}
+      <header className="header">
+        <div className="logo">
+          <a href="/">GSMag</a>
+        </div>
 
-      {/* Modal pentru Login */}
-      {showModal === 'login' && (
+        {/* Condiționăm afișarea barei de căutare */}
+        {location.pathname !== '/profile' && <SearchBar />}
+
+        {/* Dropdown pentru utilizator logat */}
+        {isLoggedIn ? (
+          <div className="profile-section">
+            <button className="profile-button" onClick={() => setShowDropdown(!showDropdown)}>
+              {user?.nume} ▼
+            </button>
+            {showDropdown && (
+              <div className="dropdown-menu">
+                <button onClick={() => navigate('/profile')}>Profil</button>
+                <button onClick={handleLogout}>Logout</button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="auth-buttons">
+            <button className="login-button" onClick={() => setShowLoginModal(true)}>Login</button>
+            <button className="signup-button" onClick={() => setShowSignupModal(true)}>Sign Up</button>
+          </div>
+        )}
+      </header>
+
+      {/* Modal Login */}
+      {showLoginModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <span className="close-button" onClick={() => setShowModal(null)}>&times;</span>
+            <button className="close-button" onClick={handleCloseModal}>X</button>
             <h2>Login</h2>
             <form onSubmit={handleLoginSubmit}>
               <label>Email:</label>
@@ -100,11 +173,11 @@ function Header() {
         </div>
       )}
 
-      {/* Modal pentru Sign Up */}
-      {showModal === 'signup' && (
+      {/* Modal Sign Up */}
+      {showSignupModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <span className="close-button" onClick={() => setShowModal(null)}>&times;</span>
+            <button className="close-button" onClick={handleCloseModal}>X</button>
             <h2>Sign Up</h2>
             <form onSubmit={handleSignupSubmit}>
               <label>Nume:</label>
@@ -115,10 +188,6 @@ function Header() {
               <input type="password" name="parola" placeholder="Parolă" onChange={handleInputChange} required />
               <label>Confirmă Parola:</label>
               <input type="password" name="confirmPassword" placeholder="Confirmă Parola" onChange={handleInputChange} required />
-              <label>Adresă:</label>
-              <input type="text" name="adresa" placeholder="Adresă" onChange={handleInputChange} required />
-              <label>Număr Telefon:</label>
-              <input type="text" name="numar_telefon" placeholder="Telefon" onChange={handleInputChange} required />
               <button type="submit">Înregistrează-te</button>
             </form>
           </div>

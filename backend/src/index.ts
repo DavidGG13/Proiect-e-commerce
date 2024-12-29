@@ -8,6 +8,7 @@ import prodRoute from "./routes/produse";
 import recRoute from "./routes/recenzie";
 import invRoute from "./routes/inventar";
 import speRoute from "./routes/specificatii";
+
 import { seedCategorii } from "./seeders/categorii";
 import { seedProduse } from "./seeders/produse";
 import { seedUtilizatori } from "./seeders/utilizatori";
@@ -17,6 +18,7 @@ import { seedInventar } from "./seeders/inventar";
 import { seedSpecificatii } from "./seeders/specificatii";
 
 import cors from "cors";
+import path from "path";
 
 dotenv.config();
 
@@ -32,6 +34,9 @@ app.use("/com", comRoute);
 app.use("/prod", prodRoute);
 app.use("/inv", invRoute);
 app.use("/spec", speRoute);
+app.use('/products', prodRoute); // Adaugă ruta în server
+app.use('/imagini', express.static(path.join(__dirname, '../imagini')));
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

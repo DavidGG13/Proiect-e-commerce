@@ -6,54 +6,79 @@ const domain = 'http://localhost:5500';
 
 export const categorii: PageSchema = {
   name: 'Categorii',
-  actions: [],
-  rowActions: [
+  actions: [
     {
-      name: 'Delete Categorie', // without form
-      onSubmit: async (categorieId: number) => {
-        // onSubmit has only param, the row's ID
-        const res = await axios.delete(domain + '/categ/' + categorieId);
+      name: 'Adaugă Categorie', // Adaugăm butonul pentru adăugare
+      onSubmit: async (values: any) => {
+        const res = await axios.post(domain + '/cat/add', values); // Endpoint pentru adăugare
         return res.data;
-      },
-    },
-    {
-      name: 'Edit categorie',
-      onSubmit: async (values: any, categorieId: number) => {
-        console.log(values);
-        console.log(categorieId);
-        const res = await axios.patch(domain + '/categ/update/' + categorieId, values);
-        return res.data;
-      },
-      initialise: async (categorieId: number) => {
-        console.log(categorieId);
-
-        const res = await axios.get(domain + `/categ/${categorieId}`);
-        let obj: any = {};
-        obj = res.data;
-        console.log(obj);
-        return obj;
       },
       fields: [
         {
           name: 'nume_categorie',
-          label: 'Name',
+          label: 'Nume Categorie',
+          type: 'string',
+          validationSchema: Yup.string().required('Required'),
+        },
+        {
+          name: 'descriere',
+          label: 'Descriere',
           type: 'string',
           validationSchema: Yup.string().required('Required'),
         },
       ],
     },
   ],
-
+  rowActions: [
+    {
+      name: 'Delete Categorie', // Ștergere categorie
+      onSubmit: async (categorieId: number) => {
+        const res = await axios.delete(domain + '/cat/' + categorieId);
+        return res.data;
+      },
+    },
+    {
+      name: 'Edit categorie', // Editare categorie
+      onSubmit: async (values: any, categorieId: number) => {
+        const res = await axios.patch(domain + '/cat/update/' + categorieId, values);
+        return res.data;
+      },
+      initialise: async (categorieId: number) => {
+        const res = await axios.get(domain + `/cat/${categorieId}`);
+        return res.data;
+      },
+      fields: [
+        {
+          name: 'nume_categorie',
+          label: 'Nume',
+          type: 'string',
+          validationSchema: Yup.string().required('Required'),
+        },
+        {
+          name: 'descriere',
+          label: 'Descriere',
+          type: 'string',
+          validationSchema: Yup.string().required('Required'),
+        },
+      ],
+    },
+  ],
   getRequest: async () => {
     const res = await axios.get(domain + '/cat');
-    console.log(res.data);
     return res.data;
   },
-
   tableFields: [
     {
-      name: 'nume_categorie',
-      access: (obj: any) => obj.nume_categorie,
+      name: 'ID',
+      access: (obj: any) => obj.categorie_id, // ID-ul categoriei
+    },
+    {
+      name: 'Nume',
+      access: (obj: any) => obj.nume_categorie, // Numele categoriei
+    },
+    {
+      name: 'Descriere',
+      access: (obj: any) => obj.descriere, // Descrierea categoriei
     },
   ],
 };

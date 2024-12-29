@@ -63,6 +63,7 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { email, parola } = req.body;
   try {
+    // Caută utilizatorul în baza de date
     const utilizator = await pool.query(
       `
       SELECT * FROM Utilizatori
@@ -70,31 +71,43 @@ export const login = async (req: Request, res: Response) => {
       `,
       [email]
     );
+
+    // Verifică dacă utilizatorul există
     if (!utilizator.rows.length) {
-      res.status(400).json({ error: "Invalid email or password" });
+      res.status(400).json({ error: "Email sau parolă incorectă!" });
       return;
     }
+
+    // Verifică parola
     const isValid = await bcrypt.compare(parola, utilizator.rows[0].parola);
     if (!isValid) {
-      res.status(400).json({ error: "Invalid email or password" });
+      res.status(400).json({ error: "Email sau parolă incorectă!" });
       return;
     }
-    // remove parola from response
-    delete utilizator.rows[0].parola;
 
-    // generate jwt token
+    // Elimină parola din răspuns
+    const { parola: hashedParola, ...userData } = utilizator.rows[0];
+
+    // Generează JWT token
     if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined");
+      throw new Error("JWT_SECRET nu este definit!");
     }
-    const token = jwt.sign(
-      { utilizator: utilizator.rows[0] },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
 
-    res.status(200).json({ token });
+    const token = jwt.sign({ utilizator: userData }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    // Returnează token-ul și informațiile utilizatorului
+    res.status(200).json({
+      token,
+      utilizator: {
+        utilizator_id: userData.utilizator_id,
+        nume: userData.nume,
+      },
+    });
   } catch (error) {
-    res.status(500).json(error);
+    console.error("Eroare la autentificare:", error);
+    res.status(500).json({ error: "Eroare internă de server!" });
   }
 };
 
@@ -168,20 +181,25 @@ export const update = async (req: Request, res: Response) => {
 export const remove = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const utilizator = await pool.query(
+    // Interogare corectă pentru ștergere
+    const result = await pool.query(
       `
       DELETE FROM Utilizatori
-      WHERE id = $1
-      RETURNING *
+      WHERE utilizator_id = $1
+      RETURNING *;
       `,
       [id]
     );
-    if (!utilizator.rows.length) {
+
+    // Verificare corectă dacă a fost șters
+    if (result.rowCount === 0) {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    res.status(200).json({ message: "Deleted!" });
+
+    res.status(200).json({ message: "Deleted successfully!" });
   } catch (error) {
-    res.status(500).json(error);
+    console.error('Eroare la ștergere:', error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

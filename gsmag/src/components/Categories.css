@@ -1,27 +1,38 @@
 .categories {
-  width: 200px;
+  display: flex;
+  flex-direction: column; /* Aliniere verticală */
+  align-items: flex-start; /* Aliniere la stânga */
+  gap: 10px; /* Spațiere între butoane */
+  margin: 20px; /* Margine pe toate laturile */
   padding: 10px;
-  border-right: 1px solid #ddd;
+  border: 1px solid #ddd; /* Chenar subțire pentru delimitare */
+  border-radius: 5px; /* Colțuri rotunjite */
+  background-color: #f9f9f9; /* Fundal deschis */
+  width: 200px; /* Lățime fixă */
 }
 
-.categories h2 {
-  margin-bottom: 10px;
+.categories button {
+  padding: 10px 20px; /* Spațiere internă */
+  font-size: 16px; /* Dimensiune font */
+  color: white; /* Text alb */
+  background-color: #007bff; /* Albastru */
+  border: none; /* Fără chenar */
+  border-radius: 5px; /* Colțuri rotunjite */
+  cursor: pointer; /* Cursor de tip mână */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Tranziții pentru hover */
+  width: 100%; /* Ocupă toată lățimea containerului */
+  text-align: left; /* Aliniere text la stânga */
 }
 
-.categories ul {
-  list-style: none;
-  padding: 0;
+.categories button:hover {
+  background-color: #0056b3; /* Albastru mai închis la hover */
+  transform: scale(1.05); /* Efect de mărire la hover */
 }
 
-.category-item {
-  padding: 10px;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  margin-bottom: 5px;
-  border-radius: 5px;
-  transition: 0.3s;
+.categories button:active {
+  transform: scale(0.95); /* Efect de apăsare */
 }
 
-.category-item:hover {
-  background-color: #f4f4f4;
+.categories button.selected {
+  background-color: #28a745; /* Verde pentru butonul selectat */
 }

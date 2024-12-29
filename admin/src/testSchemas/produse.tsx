@@ -6,33 +6,62 @@ const domain = 'http://localhost:5500';
 
 export const produse: PageSchema = {
   name: 'Produse',
-  actions: [],
+  actions: [
+    {
+      name: 'Adaugă Produs', // Buton nou pentru adăugare
+      onSubmit: async (values: any) => {
+        const res = await axios.post(domain + '/prod/add', values);
+        return res.data;
+      },
+      fields: [
+        {
+          name: 'nume_produs',
+          label: 'Name',
+          type: 'string',
+          validationSchema: Yup.string().required('Required'),
+        },
+        {
+          name: 'pret',
+          label: 'Price',
+          type: 'number',
+          validationSchema: Yup.number().required('Required'),
+        },
+        {
+          name: 'cantitate_stoc',
+          label: 'Stock',
+          type: 'number',
+          validationSchema: Yup.number().required('Required'),
+        },
+        {
+          name: 'descriere',
+          label: 'Description',
+          type: 'string',
+          validationSchema: Yup.string().required('Required'),
+        },
+      ],
+    },
+  ],
   rowActions: [
     {
-      name: 'Delete Produs', // without form
+      name: 'Delete Produs', // Șterge produsul selectat
       onSubmit: async (produsId: number) => {
-        // onSubmit has only param, the row's ID
         const res = await axios.delete(domain + '/prod/' + produsId);
         return res.data;
       },
     },
     {
-      name: 'Edit produs',
+      name: 'Edit produs', // Editează produsul selectat
       onSubmit: async (values: any, produsId: number) => {
-        console.log(values);
-        console.log(produsId);
         const res = await axios.patch(domain + '/prod/update/' + produsId, values);
         return res.data;
       },
       initialise: async (produsId: number) => {
-        console.log(produsId);
-
-        const res = await axios.get(domain + `/prod/${produsId}`);
-        let obj: any = {};
-        obj = res.data;
-        console.log(obj);
-        return obj;
-      },
+      const res = await axios.get(domain + `/prod/${produsId}`);
+     let obj: any = {};
+      obj = res.data; // Accesează datele direct din răspuns
+      console.log(obj); // Debug pentru verificare
+      return obj;
+    },
       fields: [
         {
           name: 'nume_produs',
@@ -63,7 +92,6 @@ export const produse: PageSchema = {
   ],
   getRequest: async () => {
     const res = await axios.get(domain + '/prod');
-    console.log(res.data);
     return res.data;
   },
   tableFields: [

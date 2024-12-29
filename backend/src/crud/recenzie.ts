@@ -6,32 +6,49 @@ import { Recenzie } from "../models/recenzie";
 export const findAll = async (req: Request, res: Response): Promise<void> => {
   const client = await pool.connect();
   try {
-    const result: QueryResult = await client.query("SELECT * FROM Recenzii");
-    res.status(200).json(result.rows);
+    const queryText = `
+      SELECT r.recenzie_id, r.rating, r.comentariu, r.data_recenzie,
+             u.nume_utilizator AS utilizator
+      FROM Recenzii r
+      JOIN Utilizatori u ON r.utilizator_id = u.utilizator_id
+      ORDER BY r.data_recenzie DESC;
+    `;
+    const result: QueryResult = await client.query(queryText); // Execută query-ul
+    res.status(200).json(result.rows); // Returnează recenziile
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error('Eroare la obținerea recenziilor:', err);
+    res.status(500).json({ error: "Eroare internă de server." });
   } finally {
     client.release();
   }
 };
 
 export const findById = async (req: Request, res: Response): Promise<void> => {
-  const { recenzie_id } = req.params;
+  const { id } = req.params; // ID-ul produsului
   const client = await pool.connect();
   try {
-    const result: QueryResult = await client.query(
-      "SELECT * FROM Recenzii WHERE recenzie_id = $1",
-      [recenzie_id]
-    );
+    const queryText = `
+      SELECT r.recenzie_id, r.rating, r.comentariu, r.data_recenzie,
+             u.nume AS utilizator -- Modificat din 'nume_utilizator' în 'nume'
+      FROM Recenzii r
+      JOIN Utilizatori u ON r.utilizator_id = u.utilizator_id
+      WHERE r.produs_id = $1
+      ORDER BY r.data_recenzie DESC;
+    `;
+
+    console.log("SQL Query:", queryText); // Log pentru query
+    console.log("Values:", [id]); // Log pentru valorile parametrilor
+
+    const result: QueryResult = await client.query(queryText, [id]);
+
     if (result.rows.length > 0) {
-      res.status(200).json(result.rows[0]);
+      res.status(200).json(result.rows); // Returnează recenziile
     } else {
-      res.status(404).json({ error: "Recenzie not found" });
+      res.status(404).json({ error: "Nicio recenzie găsită!" });
     }
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error('Eroare la obținerea recenziilor:', err);
+    res.status(500).json({ error: "Eroare internă de server." });
   } finally {
     client.release();
   }
