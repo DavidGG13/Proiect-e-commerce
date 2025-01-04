@@ -134,6 +134,12 @@ function Header() {
 
         {/* Condiționăm afișarea barei de căutare */}
         {location.pathname !== '/profile' && <SearchBar />}
+        {/* Buton Coș Personal */}
+        <div className="cart-section">
+        <button className="cart-button" onClick={() => navigate('/cart')}>
+        🛒 Coșul Meu
+        </button>
+        </div>
 
         {/* Dropdown pentru utilizator logat */}
         {isLoggedIn ? (
@@ -154,6 +160,8 @@ function Header() {
             <button className="signup-button" onClick={() => setShowSignupModal(true)}>Sign Up</button>
           </div>
         )}
+
+        
       </header>
 
       {/* Modal Login */}

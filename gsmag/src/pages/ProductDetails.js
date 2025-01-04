@@ -15,37 +15,57 @@ function ProductDetails() {
 
   // Fetch detaliile produsului
   useEffect(() => {
-    fetch(`http://localhost:5500/prod/${productId}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Produsul nu a fost găsit.');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setProduct(data); // Stocăm detaliile produsului
-        setLoading(false); // Dezactivăm încărcarea
-      })
-      .catch((error) => {
-        setError(error.message); // Setăm eroarea
-        setLoading(false);
-      });
+  // Fetch detalii produs cu JOIN
+  fetch(`http://localhost:5500/prod/${productId}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Produsul nu a fost găsit.');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      setProduct(data); // Include specificațiile tehnice
+      setLoading(false);
+    })
+    .catch((error) => {
+      setError(error.message);
+      setLoading(false);
+    });
 
-    // Fetch recenzii pentru produs
-    fetch(`http://localhost:5500/rec/${productId}`)
-      .then((response) => response.json())
-      .then((data) => setReviews(data)) // Setăm recenziile
-      .catch((error) => console.error('Error fetching reviews:', error));
-  }, [productId]);
+  // Fetch recenzii cu JOIN
+  fetch(`http://localhost:5500/prod/recenzii/${productId}`)
+    .then((response) => response.json())
+    .then((data) => setReviews(data))
+    .catch((error) => console.error('Eroare la fetch recenzii:', error));
+}, [productId]);
+
+   
 
   // Funcție pentru adăugarea produsului în coș
   const handleAddToCart = () => {
-    const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
-    const newCart = [...currentCart, product];
-    localStorage.setItem('cart', JSON.stringify(newCart));
-    setCart(newCart);
-    alert('Produs adăugat în coș!');
-  };
+  // Preluăm coșul existent din localStorage
+  const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  // Verificăm dacă produsul există deja în coș
+  const existingProduct = currentCart.find((item) => item.produs_id === product.produs_id);
+
+  if (existingProduct) {
+    // Dacă produsul există, creștem cantitatea
+    existingProduct.quantity += 1;
+  } else {
+    // Dacă produsul nu există, îl adăugăm cu cantitate 1
+    const newProduct = { ...product, quantity: 1 };
+    currentCart.push(newProduct);
+  }
+
+  // Actualizăm coșul în localStorage
+  localStorage.setItem('cart', JSON.stringify(currentCart));
+
+  // Actualizăm starea locală pentru coș
+  setCart(currentCart);
+
+  alert('Produs adăugat în coș!');
+};
 
   // Funcție pentru adăugarea unei recenzii
  const handleAddReview = () => {
@@ -112,29 +132,28 @@ function ProductDetails() {
       <p className="product-price">Preț: {product.pret} Lei</p>
 
       <h3>Specificații Tehnice</h3>
-      <ul>
-        <li>Procesor: {product.procesor}</li>
-        <li>RAM: {product.ram}</li>
-        <li>Stocare: {product.rom}</li>
-        <li>Baterie: {product.capacitate_baterie}</li>
-        <li>Sistem de operare: {product.sistem_operare}</li>
-      </ul>
+<ul>
+  <li>Procesor: {product.procesor || 'N/A'}</li>
+  <li>RAM: {product.ram || 'N/A'} GB</li>
+  <li>Stocare: {product.rom || 'N/A'} GB</li>
+  <li>Baterie: {product.capacitate_baterie || 'N/A'} mAh</li>
+  <li>Sistem de operare: {product.sistem_operare || 'N/A'}</li>
+</ul>
 
-      <h3>Display</h3>
-      <ul>
-        <li>Dimensiune ecran: {product.dimensiune_ecran}</li>
-        <li>Rezoluție: {product.rezolutie}</li>
-        <li>Tip panou: {product.tip_panou}</li>
-        <li>Rată de refresh: {product.rata_refresh}</li>
-      </ul>
+<h3>Display</h3>
+<ul>
+  <li>Dimensiune ecran: {product.dimensiune_ecran || 'N/A'} inch</li>
+  <li>Rezoluție: {product.rezolutie || 'N/A'}</li>
+  <li>Tip panou: {product.tip_panou || 'N/A'}</li>
+  <li>Rată de refresh: {product.rata_refresh || 'N/A'} Hz</li>
+</ul>
 
-      <h3>Camera</h3>
-      <ul>
-        <li>Camera principală: {product.camera_principala}</li>
-        <li>Camera frontală: {product.camera_frontala}</li>
-        <li>Rezoluție video: {product.rezolutie_video}</li>
-      </ul>
-
+<h3>Camera</h3>
+<ul>
+  <li>Camera principală: {product.camera_principala || 'N/A'} MP</li>
+  <li>Camera frontală: {product.camera_frontala || 'N/A'} MP</li>
+  <li>Rezoluție video: {product.rezolutie_video || 'N/A'}</li>
+</ul>
       <button className="add-to-cart-button" onClick={handleAddToCart}>
         Adaugă în coș
       </button>
@@ -179,17 +198,17 @@ function ProductDetails() {
         />
         {reviews.length > 0 ? (
   <ul className="reviews-list">
-    {reviews.map((review) => (
-      <li key={review.recenzie_id} className="review-item">
-        <p><strong>{review.utilizator}</strong></p> {/* Nume utilizator */}
-        <p>⭐ {review.rating}/5</p> {/* Rating */}
-        <p>{review.comentariu}</p> {/* Comentariu */}
-        <p className="review-date">
-          {new Date(review.data_recenzie).toLocaleDateString()} {/* Data */}
-        </p>
-      </li>
-    ))}
-  </ul>
+  {reviews.map((review) => (
+    <li key={review.recenzie_id} className="review-item">
+      <p><strong>{review.utilizator}</strong></p> {/* Nume utilizator */}
+      <p>⭐ {review.rating}/5</p> {/* Rating */}
+      <p>{review.comentariu}</p> {/* Comentariu */}
+      <p className="review-date">
+        {new Date(review.data_recenzie).toLocaleDateString()} {/* Data */}
+      </p>
+    </li>
+  ))}
+</ul>
 ) : (
   <p>Nu există recenzii pentru acest produs.</p>
 )}

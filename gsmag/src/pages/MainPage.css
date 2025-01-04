@@ -22,6 +22,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* Conținutul începe de sus */
+
 }
 
 /* Titlu Produse */
@@ -37,6 +38,7 @@
   gap: 15px;
   max-height: calc(100vh - 160px); /* Înălțimea maximă - header și margini */
   overflow: hidden; /* Fără scroll */
+  overflow-y: auto; /* Scroll doar pe verticală */
 }
 
 /* Carduri produse */

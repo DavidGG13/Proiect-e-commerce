@@ -14,6 +14,7 @@ body, html {
   flex: 1; /* Umple spațiul dintre header și footer */
   display: flex;
   flex-direction: column;
+  
 }
 
 .product-grid {

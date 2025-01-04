@@ -41,16 +41,30 @@ export const findById = async (req: Request, res: Response): Promise<void> => {
   const client = await pool.connect();
   try {
     const result: QueryResult = await client.query(
-      `
+       `
       SELECT p.*, 
              s.procesor, s.ram, s.rom, s.capacitate_baterie, s.sistem_operare,
              d.dimensiune_ecran, d.rezolutie, d.tip_panou, d.rata_refresh,
-             c.camera_principala, c.camera_frontala, c.rezolutie_video
+             c.camera_principala, c.camera_frontala, c.rezolutie_video,
+             json_agg(
+               json_build_object(
+                 'recenzie_id', r.recenzie_id,
+                 'utilizator', u.nume,
+                 'rating', r.rating,
+                 'comentariu', r.comentariu,
+                 'data_recenzie', r.data_recenzie
+               )
+             ) AS recenzii
       FROM Produse p
       LEFT JOIN Specificatii s ON p.produs_id = s.produs_id
       LEFT JOIN Specificatiidisplay d ON p.produs_id = d.produs_id
       LEFT JOIN Specificatiicamera c ON p.produs_id = c.produs_id
+      LEFT JOIN Recenzii r ON p.produs_id = r.produs_id
+      LEFT JOIN Utilizatori u ON r.utilizator_id = u.utilizator_id
       WHERE p.produs_id = $1
+      GROUP BY p.produs_id, s.procesor, s.ram, s.rom, s.capacitate_baterie, 
+               s.sistem_operare, d.dimensiune_ecran, d.rezolutie, d.tip_panou, 
+               d.rata_refresh, c.camera_principala, c.camera_frontala, c.rezolutie_video;
       `,
       [id]
     );
