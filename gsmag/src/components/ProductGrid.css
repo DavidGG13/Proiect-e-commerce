@@ -105,3 +105,19 @@ body, html {
   
 }
 
+.popular-products {
+  margin-bottom: 20px;
+}
+
+.popular-products-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.popular-product-card {
+  flex: 1 1 calc(25% - 20px);
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}

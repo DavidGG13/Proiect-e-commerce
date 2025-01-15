@@ -19,17 +19,59 @@ const createImageUrl = (nume_produs: string): string => {
 };
 // GET ALL PRODUCTS
 export const findAll = async (req: Request, res: Response): Promise<void> => {
+  const { categorie, minPrice, maxPrice, brand, stock } = req.query; // Extragem filtrele din query params
+
   const client = await pool.connect();
   try {
-    const result: QueryResult = await client.query(`
+    // Construim query-ul dinamic
+    let query = `
       SELECT p.*, c.nume_categorie 
       FROM Produse p
       LEFT JOIN Categorii c ON p.categorie_id = c.categorie_id
-    `);
-    res.status(200).json(result.rows);
+      WHERE 1 = 1
+    `;
+
+    const queryParams: any[] = [];
+
+    // 1. Filtru pentru categorie
+    if (categorie) {
+      query += ` AND LOWER(c.nume_categorie) = LOWER($${queryParams.length + 1})`;
+      queryParams.push(categorie);
+    }
+
+    // 2. Filtru pentru preț minim
+    if (minPrice) {
+      query += ` AND p.pret >= $${queryParams.length + 1}`;
+      queryParams.push(Number(minPrice));
+    }
+
+    // 3. Filtru pentru preț maxim
+    if (maxPrice) {
+      query += ` AND p.pret <= $${queryParams.length + 1}`;
+      queryParams.push(Number(maxPrice));
+    }
+
+    // 4. Filtru pentru brand
+    if (brand) {
+      query += ` AND LOWER(p.nume_produs) LIKE LOWER($${queryParams.length + 1})`;
+      queryParams.push(`%${brand}%`);
+    }
+
+    // 5. Filtru pentru stoc
+    if (stock === "true") {
+      query += ` AND p.cantitate_stoc > 0`;
+    }
+
+    query += " ORDER BY p.nume_produs"; // Ordonăm după nume
+
+    console.log("Query:", query); // Log pentru debugging
+    console.log("Params:", queryParams);
+
+    const result: QueryResult = await client.query(query, queryParams);
+    res.status(200).json(result.rows); // Returnăm rezultatele filtrate
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Eroare la filtrare:", err);
+    res.status(500).json({ error: "Eroare internă de server!" });
   } finally {
     client.release();
   }
@@ -162,7 +204,9 @@ export const update = async (req: Request, res: Response): Promise<void> => {
 // DELETE PRODUCT
 export const remove = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
+  console.log("ID primit pentru ștergere:", id);
   const client = await pool.connect();
+  
   try {
     const result: QueryResult = await client.query(
       "DELETE FROM Produse WHERE produs_id = $1",
@@ -180,4 +224,134 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
     client.release();
   }
 
+};
+
+export const findPopular = async (req: Request, res: Response): Promise<void> => {
+  const client = await pool.connect();
+  try {
+    console.log("Fetching popular products...");
+
+    const query = `
+      SELECT p.produs_id, p.nume_produs, p.categorie_id, p.marca, p.pret, 
+             p.cantitate_stoc, p.descriere, p.imagine_url, c.nume_categorie, 
+             COALESCE(AVG(r.rating), 0) AS rating_mediu, 
+             COUNT(r.recenzie_id) AS numar_recenzii
+      FROM Produse p
+      LEFT JOIN Categorii c ON p.categorie_id = c.categorie_id
+      LEFT JOIN Recenzii r ON p.produs_id = r.produs_id
+      GROUP BY p.produs_id, p.nume_produs, p.categorie_id, p.marca, p.pret, 
+               p.cantitate_stoc, p.descriere, p.imagine_url, c.nume_categorie
+      ORDER BY numar_recenzii DESC, rating_mediu DESC
+      LIMIT 10;
+    `;
+
+    console.log("SQL Query:", query);
+    const result: QueryResult = await client.query(query);
+    console.log("Results:", result.rows);
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Eroare detaliată:", err); // Logare completă în server
+    res.status(500).json({ 
+        error: "Eroare internă de server!", 
+        details: err instanceof Error ? err.message : JSON.stringify(err) 
+    });
+  } finally {
+    client.release();
+  }
+};
+
+export const findFiltered = async (req: Request, res: Response): Promise<void> => {
+  const { categorie, minPrice, maxPrice, brand, stock } = req.query; // Extragem filtrele din query
+  const client = await pool.connect();
+
+  try {
+    let query = `
+      SELECT p.*, c.nume_categorie
+      FROM Produse p
+      LEFT JOIN Categorii c ON p.categorie_id = c.categorie_id
+      WHERE 1=1
+    `;
+    const values = [];
+
+    // Aplicăm filtrele
+    if (categorie) {
+      query += ` AND c.nume_categorie = $${values.length + 1}`;
+      values.push(categorie);
+    }
+
+    if (minPrice) {
+      query += ` AND p.pret >= $${values.length + 1}`;
+      values.push(Number(minPrice));
+    }
+
+    if (maxPrice) {
+      query += ` AND p.pret <= $${values.length + 1}`;
+      values.push(Number(maxPrice));
+    }
+
+    if (brand) {
+      query += ` AND p.marca = $${values.length + 1}`;
+      values.push(brand);
+    }
+
+    if (stock === 'true') {
+      query += ` AND p.cantitate_stoc > 0`;
+    }
+
+    console.log('Filtre primite:', { categorie, minPrice, maxPrice, brand, stock });
+    console.log('Query generat:', query);
+    console.log('Valori:', values);
+
+    // Executăm interogarea
+    const result: QueryResult = await client.query(query, values);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('Eroare la filtrare:', err);
+    res.status(500).json({ error: 'Eroare internă de server!' });
+  } finally {
+    client.release();
+  }
+};
+
+
+
+
+export const searchProducts = async (req: Request, res: Response): Promise<void> => {
+  const { query } = req.query; // Preia cuvântul cheie din query params
+  const client = await pool.connect();
+
+  try {
+    // Query SQL pentru căutare
+    const sqlQuery = `
+  SELECT p.*, c.nume_categorie
+  FROM Produse p
+  LEFT JOIN Categorii c ON p.categorie_id = c.categorie_id
+  LEFT JOIN Specificatii s ON p.produs_id = s.produs_id
+  WHERE 
+    LOWER(COALESCE(p.nume_produs, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(p.descriere, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(p.marca, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(c.nume_categorie, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(s.procesor, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(s.ram, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(s.rom, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(s.capacitate_baterie, '')) LIKE LOWER($1) OR
+    LOWER(COALESCE(s.sistem_operare, '')) LIKE LOWER($1)
+  ORDER BY p.nume_produs;
+`;
+
+const values = [`%${query}%`]; // Parametrii trimiși către query
+
+console.log("SQL Query:", sqlQuery); // Log pentru debug
+console.log("Query Params:", values);
+
+const result: QueryResult = await client.query(sqlQuery, values); // Execută query-ul cu parametri
+res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Eroare la căutare:", err);
+    res.status(500).json({ error: "Eroare internă de server!" });
+  } finally {
+    client.release();
+  }
 };

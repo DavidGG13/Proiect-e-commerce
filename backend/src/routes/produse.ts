@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import pool from '../config/database';
-import { findById } from "../crud/produs"; // Ensure the file '../crud/produse.ts' exists and is correctly named
+import { findById, findPopular, remove, searchProducts } from "../crud/produs"; // Ensure the file '../crud/produse.ts' exists and is correctly named
 const router = Router();
 
 // Adaugă un produs nou
@@ -58,7 +58,12 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Eroare server!' });
   }
 });
+
+
+router.delete('/:id', remove);
+
+router.post("/populare", findPopular);
+
+router.get("/search", searchProducts);
 router.get("/:id", findById);
-
-
 export default router;

@@ -1,0 +1,140 @@
+/* Container principal */
+.analytics-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Titlul principal */
+.analytics-title {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Secțiuni */
+.analytics-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #444;
+}
+
+/* Grilă pentru produsele cu cele mai bune rating-uri */
+.multi-row-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Carduri pentru produse */
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.product-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.product-details {
+  font-size: 1rem;
+  color: #666;
+  margin: 5px 0;
+}
+
+/* Carduri pentru categorii */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #fefefe;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.category-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.category-details {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Carduri pentru stoc limitat */
+.low-stock-card {
+  border: 1px solid #ff4d4f;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #fff6f6;
+  box-shadow: 0 2px 6px rgba(255, 77, 79, 0.2);
+  text-align: center;
+}
+
+.low-stock-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);
+}
+
+.low-stock-details {
+  font-size: 1rem;
+  color: #a94442;
+}
+
+.revenue-card,
+.no-review-card,
+.top-category-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.revenue-card:hover,
+.no-review-card:hover,
+.top-category-card:hover {
+  transform: scale(1.03);
+}
+
+.revenue-card .category-name,
+.no-review-card .product-name,
+.top-category-card .product-name {
+  font-size: 18px;
+  margin-bottom: 10px;
+}

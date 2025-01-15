@@ -4,7 +4,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css'; // Importă stilurile pentru slider
 import './CategoriesFilters.css';
 
-function CategoriesFilters({ onFilterChange }) { // Primește funcția pentru aplicarea filtrelor
+function CategoriesFilters({ onFilterChange }) {
   const navigate = useNavigate();
   const location = useLocation(); // Obține calea curentă
 
@@ -12,24 +12,34 @@ function CategoriesFilters({ onFilterChange }) { // Primește funcția pentru ap
   const searchParams = new URLSearchParams(location.search);
   const selectedCategory = searchParams.get('categorie') || '';
 
-  // Funcție pentru schimbarea categoriei
-  const handleCategoryClick = (categorie) => {
-    navigate(`/?categorie=${categorie}`); // Actualizează URL-ul
-  };
-
   // Stare pentru filtre
   const [filters, setFilters] = useState({
-    minPrice: 0,         // Preț minim
-    maxPrice: 10000,     // Preț maxim
-    brand: '',           // Brand
-    stock: false,        // Disponibilitate în stoc
+    categorie: selectedCategory, // Categoria selectată
+    minPrice: 0,                 // Preț minim
+    maxPrice: 10000,             // Preț maxim
+    brand: '',                   // Brand
+    stock: false,                // Disponibilitate în stoc
   });
 
   const [sliderValue, setSliderValue] = useState([0, 10000]); // Interval slider
 
+  // Actualizează categoria selectată
+  const handleCategoryClick = (categorie) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      categorie, // Actualizează categoria selectată
+    }));
+    navigate(`/?categorie=${categorie}`); // Actualizează URL-ul
+  };
+
   // Actualizează slider-ul live
   const handleSliderChange = (value) => {
     setSliderValue(value); // Actualizează doar slider-ul
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      minPrice: value[0],
+      maxPrice: value[1],
+    }));
   };
 
   // Actualizează alte filtre
@@ -41,15 +51,9 @@ function CategoriesFilters({ onFilterChange }) { // Primește funcția pentru ap
     }));
   };
 
-  // Aplică filtrele
+  // Aplică toate filtrele la apăsarea butonului
   const handleApplyFilters = () => {
-    // Actualizează filtrele cu slider-ul curent
-    const updatedFilters = {
-      ...filters,
-      minPrice: sliderValue[0], // Integrează slider-ul în filtre
-      maxPrice: sliderValue[1],
-    };
-    onFilterChange(updatedFilters); // Trimite filtrele
+    onFilterChange(filters); // Trimite filtrele către componenta părinte
   };
 
   return (
@@ -58,19 +62,19 @@ function CategoriesFilters({ onFilterChange }) { // Primește funcția pentru ap
       <div className="categories">
         <h3>Categorii</h3>
         <button
-          className={selectedCategory === 'Telefoane' ? 'selected' : ''}
+          className={filters.categorie === 'Telefoane' ? 'selected' : ''}
           onClick={() => handleCategoryClick('Telefoane')}
         >
           Telefoane
         </button>
         <button
-          className={selectedCategory === 'Tablete' ? 'selected' : ''}
+          className={filters.categorie === 'Tablete' ? 'selected' : ''}
           onClick={() => handleCategoryClick('Tablete')}
         >
           Tablete
         </button>
         <button
-          className={selectedCategory === '' ? 'selected' : ''}
+          className={filters.categorie === '' ? 'selected' : ''}
           onClick={() => handleCategoryClick('')}
         >
           Toate
@@ -127,8 +131,19 @@ function CategoriesFilters({ onFilterChange }) { // Primește funcția pentru ap
           </label>
         </div>
 
+        {/* Buton pentru aplicarea filtrelor */}
         <button className="apply-filters-button" onClick={handleApplyFilters}>
           Aplică Filtre
+        </button>
+        
+      </div>
+      {/* Buton pentru Analytics */}
+      <div className="analytics-button">
+        <button
+          className="navigate-analytics-button"
+          onClick={() => navigate('/analytics')}
+        >
+          Analytics
         </button>
       </div>
     </div>

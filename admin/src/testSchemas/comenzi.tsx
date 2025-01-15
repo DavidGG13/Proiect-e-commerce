@@ -9,13 +9,26 @@ export const comenzi: PageSchema = {
   actions: [],
   rowActions: [
     {
-      name: 'Delete Comanda', // without form
-      onSubmit: async (comandaId: number) => {
-        // onSubmit has only param, the row's ID
-        const res = await axios.delete(domain + '/comanda/' + comandaId);
-        return res.data;
-      },
-    },
+  name: 'Delete Comanda', // Funcționalitate de ștergere comandă
+  onSubmit: async (comandaId: number) => {
+    try {
+      // Trimitem cererea DELETE la backend
+      const res = await axios.delete(`${domain}/comanda/delete/${comandaId}`);
+
+      // Afișăm răspunsul în consolă pentru debugging
+      console.log('Delete Response:', res.data);
+
+      // Returnăm răspunsul pentru UI
+      return res.data;
+    } catch (err: any) {
+      // Log pentru eroare detaliată
+      console.error('Error:', err.response?.data || err.message);
+
+      // Aruncăm eroarea pentru gestionare în UI
+      throw err;
+    }
+  },
+},
     {
       name: 'Edit comanda',
       onSubmit: async (values: any, comandaId: number) => {

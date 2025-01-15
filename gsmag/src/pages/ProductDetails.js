@@ -134,9 +134,9 @@ function ProductDetails() {
       <h3>Specificații Tehnice</h3>
 <ul>
   <li>Procesor: {product.procesor || 'N/A'}</li>
-  <li>RAM: {product.ram || 'N/A'} GB</li>
-  <li>Stocare: {product.rom || 'N/A'} GB</li>
-  <li>Baterie: {product.capacitate_baterie || 'N/A'} mAh</li>
+  <li>RAM: {product.ram || 'N/A'} </li>
+  <li>Stocare: {product.rom || 'N/A'} </li>
+  <li>Baterie: {product.capacitate_baterie || 'N/A'} </li>
   <li>Sistem de operare: {product.sistem_operare || 'N/A'}</li>
 </ul>
 
@@ -150,8 +150,8 @@ function ProductDetails() {
 
 <h3>Camera</h3>
 <ul>
-  <li>Camera principală: {product.camera_principala || 'N/A'} MP</li>
-  <li>Camera frontală: {product.camera_frontala || 'N/A'} MP</li>
+  <li>Camera principală: {product.camera_principala || 'N/A'} </li>
+  <li>Camera frontală: {product.camera_frontala || 'N/A'} </li>
   <li>Rezoluție video: {product.rezolutie_video || 'N/A'}</li>
 </ul>
       <button className="add-to-cart-button" onClick={handleAddToCart}>

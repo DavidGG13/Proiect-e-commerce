@@ -8,7 +8,7 @@ export interface TableField {
 export interface SimpleField {
   name: string;
   label: string;
-  type: 'string' | 'number' | 'file' | 'date' | 'datetime-local' | 'time';
+  type: 'string' | 'number' | 'file' | 'date' | 'datetime-local' | 'time' | 'password'; // Adăugăm 'password'
   validationSchema: any;
 }
 
@@ -62,3 +62,5 @@ export interface PageSchema {
   getRequest: () => Promise<any[]>;
   tableFields: TableField[];
 }
+
+

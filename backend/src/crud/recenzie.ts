@@ -8,7 +8,7 @@ export const findAll = async (req: Request, res: Response): Promise<void> => {
   try {
     const queryText = `
       SELECT r.recenzie_id, r.rating, r.comentariu, r.data_recenzie,
-             u.nume_utilizator AS utilizator
+             u.nume AS utilizator
       FROM Recenzii r
       JOIN Utilizatori u ON r.utilizator_id = u.utilizator_id
       ORDER BY r.data_recenzie DESC;
@@ -114,3 +114,5 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
     client.release();
   }
 };
+
+

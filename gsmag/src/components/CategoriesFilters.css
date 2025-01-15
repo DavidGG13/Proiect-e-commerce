@@ -62,3 +62,23 @@
 .apply-filters-button:hover {
   background-color: #218838;
 }
+
+.analytics-button {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.navigate-analytics-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.navigate-analytics-button:hover {
+  background-color: #0056b3;
+}

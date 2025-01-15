@@ -63,32 +63,54 @@ export const create = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const update = async (req: Request, res: Response): Promise<void> => {
-  console.log("Request:", req);
   const { comanda_id } = req.params;
-  const comanda: Comanda = req.body;
+  console.log("ID primit pentru editare:", comanda_id); // Log pentru verificare
+
+  const { data_comanda, pret_total, utilizator_id } = req.body;
+  console.log("Date primite pentru actualizare:", req.body);
+
   const client = await pool.connect();
   try {
-    const queryText = `UPDATE Comenzi SET data_comanda = $1, pret_total = $2, utilizator_id = $3 WHERE comanda_id = $4 RETURNING *`;
+    // Verificăm dacă comanda există înainte de a o edita
+    const check = await client.query(
+      "SELECT * FROM Comenzi WHERE comanda_id = $1",
+      [Number(comanda_id)]
+    );
+
+    if (check.rows.length === 0) {
+      console.log("Comanda nu a fost găsită.");
+      res.status(404).json({ error: "Comanda not found" });
+      return;
+    }
+
+    // Actualizăm comanda
+    const queryText = `
+      UPDATE Comenzi
+      SET data_comanda = $1, pret_total = $2, utilizator_id = $3
+      WHERE comanda_id = $4
+      RETURNING *;
+    `;
     const result: QueryResult = await client.query(queryText, [
-      comanda.data_comanda,
-      comanda.pret_total,
-      comanda.utilizator_id,
-      comanda_id,
+      data_comanda,
+      pret_total,
+      utilizator_id,
+      Number(comanda_id),
     ]);
+
+    console.log("Rezultat actualizare:", result.rows[0]);
+
     if (result.rows.length > 0) {
       res.status(200).json(result.rows[0]);
     } else {
       res.status(404).json({ error: "Comanda not found" });
     }
   } catch (err) {
-    console.error(err);
+    console.error("Eroare la actualizare:", err);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     client.release();
   }
-  console.log("Response:", res);
 };
-
 export const remove = async (req: Request, res: Response): Promise<void> => {
   console.log("Request:", req);
   const { comanda_id } = req.params;

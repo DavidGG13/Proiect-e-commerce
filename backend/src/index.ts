@@ -8,6 +8,8 @@ import prodRoute from "./routes/produse";
 import recRoute from "./routes/recenzie";
 import invRoute from "./routes/inventar";
 import speRoute from "./routes/specificatii";
+import statistici from "./routes/Statistici";
+
 
 import { seedCategorii } from "./seeders/categorii";
 import { seedProduse } from "./seeders/produse";
@@ -25,6 +27,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+
 app.use(express.json());
 app.use(cors());
 app.use("/user", userRoute);
@@ -36,6 +40,7 @@ app.use("/inv", invRoute);
 app.use("/spec", speRoute);
 app.use('/products', prodRoute); // Adaugă ruta în server
 app.use('/imagini', express.static(path.join(__dirname, '../imagini')));
+app.use('/api/queries', statistici);
 
 
 app.listen(PORT, () => {

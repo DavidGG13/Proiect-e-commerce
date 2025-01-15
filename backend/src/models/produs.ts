@@ -6,4 +6,5 @@ export interface Produs {
   pret: number;
   cantitate_stoc: number;
   descriere: string;
+  imagine_url?: string; // Include URL-ul imaginii
 }
